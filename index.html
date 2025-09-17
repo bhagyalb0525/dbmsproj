@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArtVault - Digital Art Marketplace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .auction-pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="gradient-bg text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold">🎨 ArtVault</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#" onclick="showPage('home')" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-white hover:bg-opacity-20 transition">Home</a>
+                        <a href="#" onclick="showPage('marketplace')" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-white hover:bg-opacity-20 transition">Marketplace</a>
+                        <a href="#" onclick="showPage('auctions')" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-white hover:bg-opacity-20 transition">Auctions</a>
+                        <a href="#" onclick="showPage('upload')" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-white hover:bg-opacity-20 transition">Upload Art</a>
+                        <button onclick="logout()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-md text-sm font-medium transition">Logout</button>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button onclick="toggleMobileMenu()" class="text-white hover:text-gray-300">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div id="mobile-menu" class="md:hidden hidden">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#" onclick="showPage('home')" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-white hover:bg-opacity-20">Home</a>
+                <a href="#" onclick="showPage('marketplace')" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-white hover:bg-opacity-20">Marketplace</a>
+                <a href="#" onclick="showPage('auctions')" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-white hover:bg-opacity-20">Auctions</a>
+                <a href="#" onclick="showPage('upload')" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-white hover:bg-opacity-20">Upload Art</a>
+                <button onclick="logout()" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium bg-red-500 hover:bg-red-600">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Login Page -->
+    <div id="login-page" class="min-h-screen gradient-bg flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+            <div class="text-center">
+                <h2 class="text-6xl font-bold text-white mb-4">🎨</h2>
+                <h2 class="text-4xl font-bold text-white">ArtVault</h2>
+                <p class="mt-2 text-xl text-white opacity-90">Digital Art Marketplace</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-xl p-8">
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                        <input id="login-email" type="email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Enter your email">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                        <input id="login-password" type="password" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Enter your password">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">I am a:</label>
+                        <select id="user-type" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            <option value="buyer">🛒 Buyer</option>
+                            <option value="artist">🎨 Artist</option>
+                        </select>
+                    </div>
+                    <button onclick="login()" class="w-full gradient-bg text-white py-3 px-4 rounded-md hover:opacity-90 transition font-medium">
+                        Sign In
+                    </button>
+                    <div class="text-center">
+                        <p class="text-sm text-gray-600">Demo credentials: any email/password works!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="main-app" class="hidden">
+        <!-- Home Page -->
+        <div id="home-page" class="page">
+            <div class="gradient-bg text-white py-20">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                    <h1 class="text-5xl font-bold mb-6">Welcome to ArtVault</h1>
+                    <p class="text-xl mb-8 opacity-90">Discover, collect, and trade extraordinary digital art</p>
+                    <div class="flex justify-center space-x-4">
+                        <button onclick="showPage('marketplace')" class="bg-white text-purple-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">
+                            Explore Marketplace
+                        </button>
+                        <button onclick="showPage('auctions')" class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-purple-600 transition">
+                            Live Auctions
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Featured Artworks</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="bg-white rounded-lg shadow-lg overflow-hidden card-hover">
+                        <div class="h-48 bg-gradient-to-br from-pink-400 to-purple-600"></div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold mb-2">Digital Dreams</h3>
+                            <p class="text-gray-600 mb-4">by @artist_maya</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-2xl font-bold text-purple-600">2.5 ETH</span>
+                                <button class="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition">View</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-lg overflow-hidden card-hover">
+                        <div class="h-48 bg-gradient-to-br from-blue-400 to-green-500"></div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold mb-2">Ocean Waves</h3>
+                            <p class="text-gray-600 mb-4">by @sea_artist</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-2xl font-bold text-purple-600">1.8 ETH</span>
+                                <button class="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition">View</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-lg overflow-hidden card-hover">
+                        <div class="h-48 bg-gradient-to-br from-yellow-400 to-red-500"></div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold mb-2">Sunset Glory</h3>
+                            <p class="text-gray-600 mb-4">by @color_master</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-2xl font-bold text-purple-600">3.2 ETH</span>
+                                <button class="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition">View</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Marketplace Page -->
+        <div id="marketplace-page" class="page hidden">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div class="flex justify-between items-center mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900">Marketplace</h1>
+                    <div class="flex space-x-4">
+                        <select class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <option>All Categories</option>
+                            <option>Abstract</option>
+                            <option>Digital Photography</option>
+                            <option>3D Art</option>
+                            <option>Pixel Art</option>
+                        </select>
+                        <select class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <option>Price: Low to High</option>
+                            <option>Price: High to Low</option>
+                            <option>Recently Added</option>
+                            <option>Most Popular</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="marketplace-grid">
+                    <!-- Marketplace items will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Auctions Page -->
+        <div id="auctions-page" class="page hidden">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-8">Live Auctions</h1>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8" id="auctions-grid">
+                    <!-- Auction items will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Page -->
+        <div id="upload-page" class="page hidden">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-8">Upload Your Artwork</h1>
+                <div class="bg-white rounded-lg shadow-lg p-8">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div>
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-purple-500 transition cursor-pointer" onclick="document.getElementById('file-input').click()">
+                                <div class="text-6xl mb-4">🖼️</div>
+                                <p class="text-lg font-medium text-gray-700 mb-2">Drop your artwork here</p>
+                                <p class="text-sm text-gray-500">or click to browse files</p>
+                                <input id="file-input" type="file" class="hidden" accept="image/*" onchange="handleFileSelect(event)">
+                            </div>
+                            <div id="preview-container" class="mt-4 hidden">
+                                <img id="preview-image" class="w-full rounded-lg shadow-md" alt="Preview">
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Artwork Title</label>
+                                <input id="artwork-title" type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Enter artwork title">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                                <textarea id="artwork-description" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Describe your artwork..."></textarea>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                                <select id="artwork-category" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option>Abstract</option>
+                                    <option>Digital Photography</option>
+                                    <option>3D Art</option>
+                                    <option>Pixel Art</option>
+                                    <option>Illustration</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Sale Type</label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center">
+                                        <input type="radio" name="sale-type" value="fixed" class="mr-2" checked onchange="toggleSaleType()">
+                                        <span>Fixed Price Sale</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="radio" name="sale-type" value="auction" class="mr-2" onchange="toggleSaleType()">
+                                        <span>Auction</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div id="fixed-price-section">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Price (ETH)</label>
+                                <input id="artwork-price" type="number" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="0.00">
+                            </div>
+                            
+                            <div id="auction-section" class="hidden space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Starting Bid (ETH)</label>
+                                    <input id="starting-bid" type="number" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="0.00">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Auction Duration</label>
+                                    <select id="auction-duration" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                        <option value="1">1 Day</option>
+                                        <option value="3">3 Days</option>
+                                        <option value="7">7 Days</option>
+                                        <option value="14">14 Days</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <button onclick="uploadArtwork()" class="w-full gradient-bg text-white py-3 px-4 rounded-md hover:opacity-90 transition font-medium">
+                                List Artwork
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Artwork Detail Modal -->
+        <div id="artwork-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 id="modal-title" class="text-2xl font-bold text-gray-900"></h2>
+                        <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div>
+                            <div id="modal-artwork" class="w-full h-96 rounded-lg"></div>
+                        </div>
+                        
+                        <div class="space-y-6">
+                            <div>
+                                <p class="text-gray-600 mb-2">Created by</p>
+                                <p id="modal-artist" class="text-lg font-semibold"></p>
+                            </div>
+                            
+                            <div>
+                                <p class="text-gray-600 mb-2">Description</p>
+                                <p id="modal-description" class="text-gray-800"></p>
+                            </div>
+                            
+                            <div id="modal-price-section">
+                                <p class="text-gray-600 mb-2">Price</p>
+                                <p id="modal-price" class="text-3xl font-bold text-purple-600"></p>
+                            </div>
+                            
+                            <div id="modal-auction-section" class="hidden">
+                                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                                    <p class="text-yellow-800 font-semibold">🔥 Live Auction</p>
+                                    <p class="text-sm text-yellow-700">Time remaining: <span id="modal-time-remaining" class="font-semibold"></span></p>
+                                </div>
+                                
+                                <div class="space-y-4">
+                                    <div>
+                                        <p class="text-gray-600 mb-2">Current Bid</p>
+                                        <p id="modal-current-bid" class="text-3xl font-bold text-purple-600"></p>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Your Bid (ETH)</label>
+                                        <input id="bid-amount" type="number" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Enter your bid">
+                                    </div>
+                                    
+                                    <button onclick="placeBid()" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-3 px-4 rounded-md transition font-medium">
+                                        Place Bid
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div id="modal-buy-section">
+                                <button onclick="buyArtwork()" class="w-full gradient-bg text-white py-3 px-4 rounded-md hover:opacity-90 transition font-medium">
+                                    Buy Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let currentUser = null;
+        let artworks = [];
+        let auctions = [];
+        let currentArtwork = null;
+
+        // Sample data
+        const sampleArtworks = [
+            {
+                id: 1,
+                title: "Digital Dreams",
+                artist: "@artist_maya",
+                price: 2.5,
+                category: "Abstract",
+                description: "A mesmerizing blend of digital colors and abstract forms that transport you to another dimension.",
+                gradient: "from-pink-400 to-purple-600",
+                type: "fixed"
+            },
+            {
+                id: 2,
+                title: "Ocean Waves",
+                artist: "@sea_artist",
+                price: 1.8,
+                category: "Digital Photography",
+                description: "Captured the perfect moment where digital art meets the natural beauty of ocean waves.",
+                gradient: "from-blue-400 to-green-500",
+                type: "fixed"
+            },
+            {
+                id: 3,
+                title: "Sunset Glory",
+                artist: "@color_master",
+                price: 3.2,
+                category: "3D Art",
+                description: "A stunning 3D rendered sunset that captures the golden hour in perfect digital form.",
+                gradient: "from-yellow-400 to-red-500",
+                type: "fixed"
+            },
+            {
+                id: 4,
+                title: "Neon City",
+                artist: "@cyber_artist",
+                price: 4.1,
+                category: "Pixel Art",
+                description: "Retro-futuristic cityscape with vibrant neon lights and cyberpunk aesthetics.",
+                gradient: "from-purple-500 to-pink-500",
+                type: "fixed"
+            },
+            {
+                id: 5,
+                title: "Forest Whispers",
+                artist: "@nature_digital",
+                price: 2.9,
+                category: "Illustration",
+                description: "Digital illustration capturing the mystical essence of an enchanted forest.",
+                gradient: "from-green-400 to-blue-500",
+                type: "fixed"
+            },
+            {
+                id: 6,
+                title: "Space Odyssey",
+                artist: "@cosmic_creator",
+                price: 5.5,
+                category: "3D Art",
+                description: "Journey through the cosmos with this breathtaking 3D space exploration piece.",
+                gradient: "from-indigo-500 to-purple-600",
+                type: "fixed"
+            }
+        ];
+
+        const sampleAuctions = [
+            {
+                id: 101,
+                title: "Quantum Realm",
+                artist: "@quantum_artist",
+                currentBid: 3.7,
+                startingBid: 2.0,
+                timeRemaining: "2h 34m",
+                endTime: Date.now() + (2 * 60 * 60 * 1000) + (34 * 60 * 1000),
+                description: "Explore the mysterious quantum realm through this mind-bending digital masterpiece.",
+                gradient: "from-cyan-400 to-blue-600",
+                bids: [
+                    { bidder: "@art_collector1", amount: 2.1, time: "3h ago" },
+                    { bidder: "@crypto_buyer", amount: 2.8, time: "2h ago" },
+                    { bidder: "@digital_enthusiast", amount: 3.7, time: "45m ago" }
+                ]
+            },
+            {
+                id: 102,
+                title: "Electric Dreams",
+                artist: "@electric_mind",
+                currentBid: 6.2,
+                startingBid: 4.0,
+                timeRemaining: "1d 12h",
+                endTime: Date.now() + (36 * 60 * 60 * 1000),
+                description: "Electrifying digital art that pulses with energy and vibrant electric colors.",
+                gradient: "from-yellow-300 to-orange-500",
+                bids: [
+                    { bidder: "@high_roller", amount: 4.5, time: "1d ago" },
+                    { bidder: "@art_maven", amount: 5.8, time: "8h ago" },
+                    { bidder: "@collector_pro", amount: 6.2, time: "2h ago" }
+                ]
+            }
+        ];
+
+        // Initialize app
+        function initApp() {
+            artworks = [...sampleArtworks];
+            auctions = [...sampleAuctions];
+            updateAuctionTimers();
+            setInterval(updateAuctionTimers, 60000); // Update every minute
+        }
+
+        // Authentication
+        function login() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const userType = document.getElementById('user-type').value;
+
+            if (email && password) {
+                currentUser = {
+                    email: email,
+                    type: userType,
+                    name: userType === 'artist' ? '@' + email.split('@')[0] : email.split('@')[0]
+                };
+
+                document.getElementById('login-page').classList.add('hidden');
+                document.getElementById('main-app').classList.remove('hidden');
+                showPage('home');
+                
+                // Hide upload page for buyers
+                if (userType === 'buyer') {
+                    document.querySelector('a[onclick="showPage(\'upload\')"]').style.display = 'none';
+                }
+            } else {
+                alert('Please enter both email and password');
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('main-app').classList.add('hidden');
+            document.getElementById('login-page').classList.remove('hidden');
+            document.getElementById('login-email').value = '';
+            document.getElementById('login-password').value = '';
+        }
+
+        // Navigation
+        function showPage(pageName) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.add('hidden');
+            });
+
+            // Show selected page
+            document.getElementById(pageName + '-page').classList.remove('hidden');
+
+            // Load page content
+            if (pageName === 'marketplace') {
+                loadMarketplace();
+            } else if (pageName === 'auctions') {
+                loadAuctions();
+            }
+
+            // Close mobile menu
+            document.getElementById('mobile-menu').classList.add('hidden');
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        }
+
+        // Marketplace
+        function loadMarketplace() {
+            const grid = document.getElementById('marketplace-grid');
+            grid.innerHTML = '';
+
+            artworks.forEach(artwork => {
+                const artworkCard = createArtworkCard(artwork);
+                grid.appendChild(artworkCard);
+            });
+        }
+
+        function createArtworkCard(artwork) {
+            const card = document.createElement('div');
+            card.className = 'bg-white rounded-lg shadow-lg overflow-hidden card-hover cursor-pointer';
+            card.onclick = () => openArtworkModal(artwork);
+
+            card.innerHTML = `
+                <div class="h-48 bg-gradient-to-br ${artwork.gradient}"></div>
+                <div class="p-4">
+                    <h3 class="text-lg font-semibold mb-1">${artwork.title}</h3>
+                    <p class="text-gray-600 text-sm mb-3">${artwork.artist}</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xl font-bold text-purple-600">${artwork.price} ETH</span>
+                        <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">${artwork.category}</span>
+                    </div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        // Auctions
+        function loadAuctions() {
+            const grid = document.getElementById('auctions-grid');
+            grid.innerHTML = '';
+
+            auctions.forEach(auction => {
+                const auctionCard = createAuctionCard(auction);
+                grid.appendChild(auctionCard);
+            });
+        }
+
+        function createAuctionCard(auction) {
+            const card = document.createElement('div');
+            card.className = 'bg-white rounded-lg shadow-lg overflow-hidden card-hover cursor-pointer';
+            card.onclick = () => openAuctionModal(auction);
+
+            card.innerHTML = `
+                <div class="h-64 bg-gradient-to-br ${auction.gradient} relative">
+                    <div class="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold auction-pulse">
+                        LIVE
+                    </div>
+                </div>
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold mb-2">${auction.title}</h3>
+                    <p class="text-gray-600 mb-4">${auction.artist}</p>
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <p class="text-sm text-gray-500">Current Bid</p>
+                            <p class="text-2xl font-bold text-purple-600">${auction.currentBid} ETH</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm text-gray-500">Time Left</p>
+                            <p class="text-lg font-semibold text-red-600">${auction.timeRemaining}</p>
+                        </div>
+                    </div>
+                    <button class="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-md transition font-medium">
+                        Place Bid
+                    </button>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function updateAuctionTimers() {
+            auctions.forEach(auction => {
+                const now = Date.now();
+                const timeLeft = auction.endTime - now;
+                
+                if (timeLeft > 0) {
+                    const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                    
+                    if (hours > 24) {
+                        const days = Math.floor(hours / 24);
+                        const remainingHours = hours % 24;
+                        auction.timeRemaining = `${days}d ${remainingHours}h`;
+                    } else {
+                        auction.timeRemaining = `${hours}h ${minutes}m`;
+                    }
+                } else {
+                    auction.timeRemaining = "Ended";
+                }
+            });
+        }
+
+        // Modal functions
+        function openArtworkModal(artwork) {
+            currentArtwork = artwork;
+            document.getElementById('modal-title').textContent = artwork.title;
+            document.getElementById('modal-artist').textContent = artwork.artist;
+            document.getElementById('modal-description').textContent = artwork.description;
+            document.getElementById('modal-price').textContent = artwork.price + ' ETH';
+            document.getElementById('modal-artwork').className = `w-full h-96 rounded-lg bg-gradient-to-br ${artwork.gradient}`;
+            
+            document.getElementById('modal-auction-section').classList.add('hidden');
+            document.getElementById('modal-price-section').classList.remove('hidden');
+            document.getElementById('modal-buy-section').classList.remove('hidden');
+            
+            document.getElementById('artwork-modal').classList.remove('hidden');
+            document.getElementById('artwork-modal').classList.add('flex');
+        }
+
+        function openAuctionModal(auction) {
+            currentArtwork = auction;
+            document.getElementById('modal-title').textContent = auction.title;
+            document.getElementById('modal-artist').textContent = auction.artist;
+            document.getElementById('modal-description').textContent = auction.description;
+            document.getElementById('modal-current-bid').textContent = auction.currentBid + ' ETH';
+            document.getElementById('modal-time-remaining').textContent = auction.timeRemaining;
+            document.getElementById('modal-artwork').className = `w-full h-96 rounded-lg bg-gradient-to-br ${auction.gradient}`;
+            
+            document.getElementById('modal-price-section').classList.add('hidden');
+            document.getElementById('modal-buy-section').classList.add('hidden');
+            document.getElementById('modal-auction-section').classList.remove('hidden');
+            
+            document.getElementById('artwork-modal').classList.remove('hidden');
+            document.getElementById('artwork-modal').classList.add('flex');
+        }
+
+        function closeModal() {
+            document.getElementById('artwork-modal').classList.add('hidden');
+            document.getElementById('artwork-modal').classList.remove('flex');
+            currentArtwork = null;
+        }
+
+        function buyArtwork() {
+            if (currentUser && currentArtwork) {
+                alert(`Congratulations! You've successfully purchased "${currentArtwork.title}" for ${currentArtwork.price} ETH!`);
+                closeModal();
+            }
+        }
+
+        function placeBid() {
+            const bidAmount = parseFloat(document.getElementById('bid-amount').value);
+            
+            if (!bidAmount || bidAmount <= currentArtwork.currentBid) {
+                alert(`Your bid must be higher than the current bid of ${currentArtwork.currentBid} ETH`);
+                return;
+            }
+
+            currentArtwork.currentBid = bidAmount;
+            currentArtwork.bids.unshift({
+                bidder: currentUser.name,
+                amount: bidAmount,
+                time: "Just now"
+            });
+
+            document.getElementById('modal-current-bid').textContent = bidAmount + ' ETH';
+            document.getElementById('bid-amount').value = '';
+            
+            alert(`Bid placed successfully! You are now the highest bidder at ${bidAmount} ETH.`);
+            
+            // Update auction card if visible
+            loadAuctions();
+        }
+
+        // Upload functionality
+        function toggleSaleType() {
+            const saleType = document.querySelector('input[name="sale-type"]:checked').value;
+            const fixedSection = document.getElementById('fixed-price-section');
+            const auctionSection = document.getElementById('auction-section');
+
+            if (saleType === 'auction') {
+                fixedSection.classList.add('hidden');
+                auctionSection.classList.remove('hidden');
+            } else {
+                fixedSection.classList.remove('hidden');
+                auctionSection.classList.add('hidden');
+            }
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('preview-image').src = e.target.result;
+                    document.getElementById('preview-container').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function uploadArtwork() {
+            const title = document.getElementById('artwork-title').value;
+            const description = document.getElementById('artwork-description').value;
+            const category = document.getElementById('artwork-category').value;
+            const saleType = document.querySelector('input[name="sale-type"]:checked').value;
+
+            if (!title || !description) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            const gradients = [
+                'from-red-400 to-pink-600',
+                'from-green-400 to-blue-500',
+                'from-purple-400 to-pink-400',
+                'from-yellow-400 to-orange-500',
+                'from-indigo-400 to-purple-600',
+                'from-pink-400 to-red-500'
+            ];
+
+            const newArtwork = {
+                id: Date.now(),
+                title: title,
+                artist: currentUser.name,
+                category: category,
+                description: description,
+                gradient: gradients[Math.floor(Math.random() * gradients.length)],
+                type: saleType
+            };
+
+            if (saleType === 'fixed') {
+                const price = parseFloat(document.getElementById('artwork-price').value);
+                if (!price) {
+                    alert('Please enter a price');
+                    return;
+                }
+                newArtwork.price = price;
+                artworks.push(newArtwork);
+            } else {
+                const startingBid = parseFloat(document.getElementById('starting-bid').value);
+                const duration = parseInt(document.getElementById('auction-duration').value);
+                
+                if (!startingBid) {
+                    alert('Please enter a starting bid');
+                    return;
+                }
+
+                const newAuction = {
+                    ...newArtwork,
+                    currentBid: startingBid,
+                    startingBid: startingBid,
+                    endTime: Date.now() + (duration * 24 * 60 * 60 * 1000),
+                    timeRemaining: `${duration}d 0h`,
+                    bids: []
+                };
+                auctions.push(newAuction);
+            }
+
+            alert(`Your artwork "${title}" has been successfully listed!`);
+            
+            // Reset form
+            document.getElementById('artwork-title').value = '';
+            document.getElementById('artwork-description').value = '';
+            document.getElementById('artwork-price').value = '';
+            document.getElementById('starting-bid').value = '';
+            document.getElementById('preview-container').classList.add('hidden');
+            document.querySelector('input[name="sale-type"][value="fixed"]').checked = true;
+            toggleSaleType();
+        }
+
+        // Initialize the app
+        initApp();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'980a02a1229cf586',t:'MTc1ODEyNjg1OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
